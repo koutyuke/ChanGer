@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Guild {
+  guild_id   String     @id
+  guild_name String
+  icon_url   String
+  channels   Channel[]
+  teams      Team[]
+  members    Member[]
+  categories Category[]
+  all_member  Boolean   @default(true)
+  all_channel Boolean   @default(true)
+}
+
+model Category {
+  category_name String
+  category_id   String
+  channels      Channel[]
+  guild         Guild     @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade)
+  guild_id      String
+
+  @@id([category_id, guild_id])
+}
+
+model Channel {
+  channel_id   String   @id
+  channel_name String
+  HOME         Boolean
+  team         Team?
+  guild        Guild    @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade)
+  guild_id     String
+  category     Category @relation(fields: [category_id, guild_id], references: [category_id, guild_id], onDelete: Cascade)
+  category_id  String
+  join_members Member[]
+  use Boolean @default(true)
+}
+
+model Team {
+  team_name   String?
+  team_member Member[]
+  guild       Guild    @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade)
+  guild_id    String
+  channel     Channel  @relation(fields: [connect_channel_id], references: [channel_id], onDelete: Cascade)
+  connect_channel_id  String @unique
+  
+  @@id([guild_id,connect_channel_id])
+}
+
+model Member {
+  member_id  String
+  user       User     @relation(fields: [member_id], references: [user_id], onDelete: Cascade)
+  nick_name  String?
+  guild      Guild    @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade)
+  guild_id   String
+  channel    Channel? @relation(fields: [channel_id], references: [channel_id], onDelete: Cascade)
+  channel_id String?
+  team       Team?    @relation(fields: [team_id,guild_id], references: [connect_channel_id,guild_id], onDelete: Cascade)
+  team_id    String?
+  use Boolean @default(true) 
+
+  @@id([guild_id, member_id])
+}
+
+model User {
+  user_id            String   @id
+  // token String? //default = none
+  member             Member[]
+  user_name          String
+  user_discriminator String
+  icon_url           String?
+}
