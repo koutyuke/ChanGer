@@ -30,9 +30,7 @@ const Welcome: FC<WelcomeProp> = ({ IsSignIn }) => {
       <div className="flex h-full w-full flex-col items-center space-y-4 p-3">
         <p className="text-4xl">Pages</p>
         <div className="grid h-full w-full grid-cols-3 gap-4">
-          <p className="h-full w-full rounded-xl bg-gray-200 p-2">
-            How To Use
-          </p>
+          <p className="h-full w-full rounded-xl bg-gray-200 p-2">How To Use</p>
           <p className="h-full w-full rounded-xl bg-gray-200 p-2">
             Information
           </p>

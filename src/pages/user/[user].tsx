@@ -51,10 +51,7 @@ const Index: FC<IndexProps> = ({ data, status, statusText }) => {
       console.log("change-member");
     });
   }, [Id, socket]);
-
-  return (
-    <Body GuildData={data} socket={socket} />
-  );
+  return <Body GuildData={data} socket={socket} />;
 };
 
 export default Index;

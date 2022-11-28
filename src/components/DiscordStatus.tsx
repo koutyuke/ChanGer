@@ -1,40 +1,40 @@
 import { Category, Channel, Member, Team, User } from "lib/prisma";
 import { FC } from "react";
 
-type Categories = (Category & {
-  channels: (Channel & {
-      join_members: (Member & {
+type Categories = (
+  | (Category & {
+      channels: (Channel & {
+        join_members: (Member & {
           user: User;
-      })[];
-      team: (Team & {
-        team_member: (Member & {
-            user: User;
         })[];
-        channel: Channel | null;
-      }) | null;
-  })[];
-}| undefined)[]
+        team:
+          | (Team & {
+              team_member: (Member & {
+                user: User;
+              })[];
+              channel: Channel | null;
+            })
+          | null;
+      })[];
+    })
+  | undefined
+)[];
 
 type StatusProps = {
   categories: Categories;
-}
+};
 
-const Status: FC<StatusProps> = ({categories}) => {
+const Status: FC<StatusProps> = ({ categories }) => {
   const usingChannel = categories.filter(
     (categoriy) =>
-      categoriy?.channels.filter(
-        (channel) => channel.join_members.length
-      ).length
-  )
+      categoriy?.channels.filter((channel) => channel.join_members.length)
+        .length
+  );
 
-  if(!usingChannel.length){
-    return(
-      <p>
-        no join member
-      </p>
-    )
+  if (!usingChannel.length) {
+    return <p>no join member</p>;
   }
-  return(
+  return (
     <ul role="menu">
       {usingChannel.map((category) => (
         <li
@@ -42,9 +42,7 @@ const Status: FC<StatusProps> = ({categories}) => {
           key={`nowCategory-${category?.category_id}`}
         >
           <p className="border-b-2 border-red-400">
-            <small>
-              {category?.category_name}
-            </small>
+            <small>{category?.category_name}</small>
           </p>
           <ul role="menu">
             {category?.channels
@@ -67,8 +65,7 @@ const Status: FC<StatusProps> = ({categories}) => {
         </li>
       ))}
     </ul>
-  )
-}
-
+  );
+};
 
 export default Status;

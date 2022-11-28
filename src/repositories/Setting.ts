@@ -5,7 +5,7 @@ export const ChangeTeamMember = async (
   connectId: string,
   memberId: string
 ) => {
-  const setData = connectId === "selectBox"? {set:null} : connectId
+  const setData = connectId === "selectBox" ? { set: null } : connectId;
   await prisma.member.update({
     where: {
       guild_id_member_id: {
@@ -14,7 +14,7 @@ export const ChangeTeamMember = async (
       },
     },
     data: {
-      team_id: setData, 
+      team_id: setData,
     },
   });
 };
