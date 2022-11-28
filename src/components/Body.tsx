@@ -1,18 +1,14 @@
-import {
-  DataType,
-  SelectTeamBox,
-  mouseMove,
-  mouseUp,
-  TeamType,
-  SelectMemberBox,
-} from "components/DNDselect";
 import { GuildDataType } from "pages/api/info/guild";
 import { FC, useEffect, useState } from "react";
-import { MdHome } from "react-icons/md";
 import { Socket } from "socket.io-client";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
-import DiscordStatus from "components/DiscordStatus"
+import DiscordStatus from "components/DiscordStatus";
 import { Change, Home, Reset, Setting } from "./Button";
+import MemberArea from "./DNDselect/MemberArea";
+import TeamArea from "./DNDselect/TeamArea";
+import { DataType} from "./DNDselect/mouseEvent/type/model";
+import mouseMove from "./DNDselect/mouseEvent/MouseMove";
+import mouseUp from "./DNDselect/mouseEvent/MouseUp";
 
 type BodyProps = {
   GuildData: GuildDataType;
@@ -22,15 +18,19 @@ type BodyProps = {
 const Body: FC<BodyProps> = ({ GuildData, socket }) => {
   const [data, setData] = useState<DataType>({
     element: null,
-    placeHolder: null,
+    shadowElement: null,
     cloneElement: null,
     enterElement: null,
     IsDragg: false,
     first: false,
     downInfo: null,
     enterInfo: null,
+    elementCursorPointX: 0,
+    elementCursorPointY: 0,
     guildId: GuildData?.guild_id as string,
   });
+
+  const [isElementDragg, setIsElementDragg] = useState(false);
 
   useEffect(() => {
     window.addEventListener("mousemove", (event) => {
@@ -38,9 +38,9 @@ const Body: FC<BodyProps> = ({ GuildData, socket }) => {
     });
 
     window.addEventListener("mouseup", () => {
-      mouseUp(data, setData, socket);
+      mouseUp(data, setData, socket,setIsElementDragg);
     });
-  }, [data,socket]);
+  }, [data, socket]);
 
   const soteCategories = [
     GuildData?.categories.find((category) => category.category_name === "None"),
@@ -58,67 +58,24 @@ const Body: FC<BodyProps> = ({ GuildData, socket }) => {
   const [IsTeamAll, setTeamAll] = useState(GuildData?.all_channel);
   const [HOME, setHOME] = useState(channels?.find((channel) => channel.HOME));
 
-  const selectMember = GuildData?.members.filter(
+  const noSelectMember = GuildData?.members.filter(
     (serMem) => serMem.team_id === null
   );
-
-  const selectMemberData: TeamType = {
-    teamName: null,
-    channelname: "selectBox",
-    connectChannelId: "selectBox",
-    guildId: GuildData?.guild_id ?? "",
-    selectMember:
-      selectMember?.map((serMem) => ({
-        name: serMem.user.user_name,
-        iconUrl:
-          serMem.user.icon_url ??
-          `${process.env.NEXT_PUBLIC_THIS_URL}/icon/none.png` ??
-          "",
-        discriminator: serMem.user.user_discriminator,
-        memberId: serMem.member_id,
-      })) ?? [],
-  };
 
   return (
     <div className="flex h-full w-full select-none space-x-3 p-6">
       <div className="flex w-full space-x-5">
         <div className="h-full basis-1/2  rounded-lg bg-[#fefcf0] p-4">
-          <div
-            className={`${
-              IsSetting ? "hidden" : "block"
-            } scrollber-hidden flex h-full w-full flex-col space-y-2 overflow-auto rounded-lg border-[3px] border-transparent bg-[#78b9d5] p-4`}
-          >
-            <div className="h-18 flex w-full items-center justify-center rounded-lg bg-gray-100 p-4">
-              <div className="flex h-10 w-full space-x-2">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#79d5a3]">
-                  <MdHome size={48} color="white" />
-                </div>
-                <div className="flex h-10 w-[calc(100%_-_3rem)] items-center justify-center overflow-auto rounded-lg bg-[#79d5a3]">
-                  <p className="text-center text-2xl text-white">
-                    {HOME?.channel_name}
-                  </p>
-                </div>
-              </div>
-            </div>
-            {teams?.map((team) => {
-              const propsTeam: TeamType = {
-                teamName: team.team_name,
-                selectMember: team.team_member.map((mem) => ({
-                  name: mem.nick_name ?? mem.user.user_name,
-                  iconUrl:
-                    mem.user.icon_url ??
-                    `${process.env.NEXT_PUBLIC_THIS_URL}/icon/none.png` ??
-                    "",
-                  discriminator: mem.user.user_discriminator,
-                  memberId: mem.member_id,
-                })),
-                guildId: team.guild_id,
-                connectChannelId: team.connect_channel_id,
-                channelname: team.channel?.channel_name ?? "",
-              };
-              return SelectTeamBox({ team: propsTeam, data, setData });
-            })}
-          </div>
+          <TeamArea
+            data={data}
+            setData={setData}
+            isHidden={IsSetting}
+            homeChannelName={HOME?.channel_name}
+            teams={teams}
+            setIsElementDragg={setIsElementDragg}
+            isElementDragg={isElementDragg}
+          />
+
           <div
             className={`${
               IsSetting ? "block" : "hidden"
@@ -200,10 +157,7 @@ const Body: FC<BodyProps> = ({ GuildData, socket }) => {
                           category?.category_name !== "None"
                       )
                       .map((category) => (
-                        <div
-                          key={`setting-${category?.category_id}`}
-                        
-                        >
+                        <div key={`setting-${category?.category_id}`}>
                           <div className="border-b-2 border-gray-300">
                             {category?.category_name}
                           </div>
@@ -238,12 +192,15 @@ const Body: FC<BodyProps> = ({ GuildData, socket }) => {
             <Change IsSetting={IsSetting} />
             <Reset IsSetting={IsSetting} />
           </div>
-          <SelectMemberBox
-            team={selectMemberData}
+
+          <MemberArea
+            noSelectMembers={noSelectMember}
             data={data}
             setData={setData}
             isHidden={IsSetting}
-            Height="h-[calc(100%_-_4rem)]"
+            guildId={GuildData?.guild_id ?? ""}
+            setIsElementDragg={setIsElementDragg}
+            isElementDragg={isElementDragg}
           />
 
           <div
@@ -297,7 +254,7 @@ const Body: FC<BodyProps> = ({ GuildData, socket }) => {
         </div>
       </div>
       <div className="scrollber-hidden w-48 overflow-auto rounded-lg bg-[#fefcf0] p-4">
-        <DiscordStatus categories={categories}/>
+        <DiscordStatus categories={categories} />
       </div>
     </div>
   );
