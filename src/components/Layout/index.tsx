@@ -1,6 +1,6 @@
 import Head from "next/head";
 import { FC, Fragment } from "react";
-import Header from "../Header";
+import Header from "./Header";
 import { LayoutProps } from "./type/model";
 
 
