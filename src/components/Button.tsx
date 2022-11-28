@@ -1,4 +1,4 @@
-import { Dispatch, FC, SetStateAction } from "react";
+import { Dispatch, FC, ReactNode, SetStateAction } from "react";
 import { MdSettings, MdHome } from "react-icons/md";
 import { TbRefresh, TbExchange } from "react-icons/tb";
 
@@ -62,5 +62,29 @@ export const Change: FC<ButtonBaseProps> = ({ IsSetting }) => (
     }}
   >
     <TbExchange size={48} />
+  </button>
+);
+
+type BaseSettingProps = {
+  isSetting: boolean;
+  Children: ReactNode;
+  onClick: () => void;
+  style: string;
+};
+
+const BaseSettingButton: FC<BaseSettingProps> = ({
+  isSetting,
+  Children,
+  onClick,
+  style,
+}) => (
+  <button
+    type="button"
+    className={`${
+      isSetting ? "hidden" : "block"
+    } ${style} flex h-12 w-12 items-center justify-center rounded-lg bg-gray-300`}
+    onClick={onClick}
+  >
+    {Children}
   </button>
 );
