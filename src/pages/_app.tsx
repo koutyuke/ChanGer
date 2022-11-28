@@ -9,7 +9,6 @@ const MyApp = ({
 }: AppProps) => (
   <SessionProvider session={session}>
     <Layout>
-      {/* eslint-disable-next-line react/jsx-props-no-spreading */}
       <Component {...pageProps} />
     </Layout>
   </SessionProvider>
