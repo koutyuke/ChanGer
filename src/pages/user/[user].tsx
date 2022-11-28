@@ -37,7 +37,6 @@ const Index: FC<IndexProps> = ({ data, status, statusText }) => {
   }
   const socket = useMemo(() => io(), []);
   const Id = data?.guild_id;
-  const [message, setMessage] = useState<MessageModel[]>([]);
 
   useEffect(() => {
     socket.on("connect", () => {
